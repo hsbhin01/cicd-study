@@ -11,15 +11,17 @@ on:
 permissions:
   contents: read
 
+# Action은 태그(@v4) 대신 커밋 SHA로 고정합니다 (태그는 작성자가 옮길 수 있음).
+# 뒤의 주석이 사람이 읽는 버전이며, Dependabot이 SHA와 주석을 함께 업데이트합니다.
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest   # GitHub이 제공하는 클라우드 runner
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
         with:
           version: "0.6.14"        # 로컬과 같은 버전
           python-version: "3.13"
@@ -43,3 +45,55 @@ jobs:
       - name: Coverage summary
         if: always()
         run: uv run coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+
+  # 이미지를 빌드만 하고(push 안 함) 알려진 취약점(CVE)을 스캔합니다.
+  # PR 단계에서 실행하므로, 머지 전에 결과를 볼 수 있습니다.
+  image-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          load: true                 # runner의 docker에 이미지를 올려 스캔할 수 있게 함
+          push: false
+          tags: cicd-study:scan
+          cache-from: type=gha       # CD가 저장한 레이어 캐시 재사용 (저장은 하지 않음)
+
+      # 1) 리포트: HIGH, CRITICAL 목록을 Summary에 표시 (실패시키지 않음)
+      - name: Scan report (HIGH, CRITICAL)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: cicd-study:scan
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true       # 고친 버전이 아직 없는 취약점은 제외 (지금 할 수 있는 조치가 없으므로)
+          format: table
+          output: trivy-report.txt
+          exit-code: "0"
+
+      - name: Scan summary
+        if: always()
+        run: |
+          echo "### Trivy scan (HIGH, CRITICAL, fixable only)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat trivy-report.txt >> "$GITHUB_STEP_SUMMARY" || echo "no report" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      # 2) 관문: 고칠 수 있는 CRITICAL이 하나라도 있으면 실패
+      - name: Scan gate (fixable CRITICAL)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: cicd-study:scan
+          scanners: vuln
+          severity: CRITICAL
+          ignore-unfixed: true
+          format: table
+          exit-code: "1"
+          skip-setup-trivy: true     # 앞 step에서 설치한 trivy 재사용
