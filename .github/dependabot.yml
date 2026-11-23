@@ -1,0 +1,27 @@
+# Dependabot: 의존성의 새 버전이 나오면 업데이트 PR을 자동으로 만듭니다.
+# 만들어진 PR에서도 CI(lint, test, image-scan)가 돌기 때문에, 통과한 업데이트만 머지하면 됩니다.
+version: 2
+updates:
+  # Python 패키지 (pyproject.toml + uv.lock)
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      python-minor-patch:          # 마이너/패치 업데이트는 PR 하나로 묶음 (PR 폭탄 방지)
+        update-types: ["minor", "patch"]
+
+  # GitHub Actions (워크플로우의 uses: ... SHA와 버전 주석)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Dockerfile의 베이스 이미지 (FROM ...@sha256 digest)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
