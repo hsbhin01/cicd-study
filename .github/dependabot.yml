@@ -25,3 +25,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # Python 버전(3.13 → 3.15 등)은 자동으로 올리지 않음.
+      # CI 테스트는 3.13에서만 돌기 때문에, 이미지만 바꾸면 개발/운영 Python이 어긋남.
+      # 같은 3.13-slim 태그의 digest 갱신(보안 패치 반영)만 받음.
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
