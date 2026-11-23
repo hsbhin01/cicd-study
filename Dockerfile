@@ -2,7 +2,7 @@
 # 의존성 설치에 필요한 도구(uv)는 이 단계에만 존재합니다.
 # 베이스 이미지는 digest(@sha256:...)로 고정: 태그는 같아도 내용이 바뀔 수 있으므로.
 # 갱신은 Dependabot이 PR로 제안합니다.
-FROM python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90 AS builder
+FROM python:3.15-slim@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928 AS builder
 COPY --from=ghcr.io/astral-sh/uv:0.6.14@sha256:3362a526af7eca2fcd8604e6a07e873fb6e4286d8837cb753503558ce1213664 /uv /bin/uv
 
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY app ./app
 
 # ---- Stage 2: runtime ----
 # 최종 이미지에는 가상환경과 소스만 들어갑니다 (uv, 빌드 캐시 없음).
-FROM python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
+FROM python:3.15-slim@sha256:65a65fc7b30b06cb6df4930fd4650697cb23f4c2698ab81fc87e4b031bc36928
 WORKDIR /app
 
 # 실행에 필요 없는 pip 제거 (pip이 내장한 라이브러리의 취약점까지 함께 제거됨)
