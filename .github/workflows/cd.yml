@@ -31,7 +31,7 @@ jobs:
 
       # BuildKit 기반 빌더 준비 (멀티스테이지, 캐시, 멀티 아키텍처 빌드)
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       # GHCR 로그인: 별도 비밀번호 없이 워크플로우가 자동으로 받는 GITHUB_TOKEN 사용
       - name: Log in to GHCR
