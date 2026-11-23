@@ -18,6 +18,15 @@ def test_health():
     assert res.json() == {"status": "ok"}
 
 
+def test_list_items():
+    assert client.get("/items").json() == {}
+
+    client.post("/items/1", json={"name": "pen", "price": 1.5})
+    res = client.get("/items")
+    assert res.status_code == 200
+    assert res.json() == {"1": {"name": "pen", "price": 1.5}}
+
+
 def test_create_and_get_item():
     res = client.post("/items/1", json={"name": "pen", "price": 1.5})
     assert res.status_code == 201

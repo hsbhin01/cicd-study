@@ -12,6 +12,7 @@ dev = [
     "pytest>=8",
     "httpx>=0.27",
     "ruff>=0.5",
+    "pytest-cov>=7.1.0",
 ]
 
 [tool.ruff]
@@ -22,3 +23,10 @@ select = ["E", "F", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["app"]          # 측정 대상: 앱 코드만 (테스트 코드는 제외)
+
+[tool.coverage.report]
+show_missing = true       # 실행되지 않은 줄 번호 표시
+fail_under = 90           # 커버리지가 90% 미만이면 실패 → CI도 실패
