@@ -23,6 +23,8 @@ jobs:
         with:
           version: "0.6.14"        # 로컬과 같은 버전
           python-version: "3.13"
+          enable-cache: true                  # uv가 내려받은 패키지를 GitHub 캐시에 저장/복원
+          cache-dependency-glob: "uv.lock"    # 캐시 키: uv.lock이 바뀌면 새 캐시
 
       - name: Install dependencies
         run: uv sync --frozen      # uv.lock과 다르면 실패
