@@ -5,6 +5,9 @@ name: CD
 on:
   push:
     branches: [main]
+    paths-ignore:             # 문서만 바뀐 경우에는 이미지를 새로 만들지 않음
+      - "notes/**"
+      - "**.md"
   workflow_dispatch:          # Actions 화면에서 수동 실행 버튼
 
 permissions:
