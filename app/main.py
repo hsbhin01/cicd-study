@@ -14,7 +14,7 @@ _items: dict[int, Item] = {}
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "OK"}
 
 
 @app.get("/items")
